@@ -119,7 +119,40 @@
 <main class="gallery-grid" id="gallery"></main>
 
 <footer><a href="https://m.me/splasher11" target="_blank" class="main-btn">CONTACT OWNER</a></footer>
+  <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+        const firebaseConfig = {
+            apiKey: "AIzaSyDDNemQfmyd89Fk94FJ0B6tlk_u_isGelA",
+            authDomain: "crush-855cb.firebaseapp.com",
+            databaseURL: "https://crush-855cb-default-rtdb.firebaseio.com",
+            projectId: "crush-855cb",
+            storageBucket: "crush-855cb.firebasestorage.app",
+            messagingSenderId: "32796590966",
+            appId: "1:32796590966:web:0fe591b0d7cca6aaf07057",
+            measurementId: "G-R2K7TH1265"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const shopRef = ref(db, 'luxe_products');
+
+        // Expose to window so our other functions can use them
+        window.firebaseDB = db;
+        window.shopRef = shopRef;
+        window.dbSet = set;
+        window.dbRef = ref;
+
+        // Listen for data changes (This makes it appear on all devices!)
+        onValue(shopRef, (snapshot) => {
+            const data = snapshot.val();
+            window.shopData = data ? Object.values(data) : [];
+            // We keep the keys to handle delete/update easily
+            window.rawKeys = data ? Object.keys(data) : [];
+            render();
+        });
+  </script>
 <script>
 const DB = 'ironclaw_ultra_v1';
 let birds = JSON.parse(localStorage.getItem(DB)) || [];
