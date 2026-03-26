@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IronClaw Gamefarm | Premium Stocks</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&family=Inter:wght@300;600;800&display=swap" rel="stylesheet">
+
+<style>
+  :root { 
+    --gold: #ff9f43; 
+    --gold-glow: rgba(255, 159, 67, 0.4);
+    --dark-bg: #0a0a0b;
+    --card-bg: #161618;
+    --glass: rgba(255, 255, 255, 0.03);
+    --border: rgba(255, 255, 255, 0.1);
+  }
+  
+  * { box-sizing: border-box; }
+  body { 
+    margin: 0; padding-bottom: 100px; font-family: 'Inter', sans-serif; 
+    background-color: var(--dark-bg); background-image: radial-gradient(circle at 50% 50%, #1a1a1d 0%, #0a0a0b 100%);
+    color: #fff; overflow-x: hidden;
+  }
+  
+  header { 
+    background: rgba(10, 10, 11, 0.85); display: flex; align-items: center; padding: 12px 20px;
+    position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(15px); border-bottom: 1px solid var(--border);
+  }
+
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand img { height: 40px; width: 40px; border-radius: 10px; border: 1px solid var(--gold); box-shadow: 0 0 10px var(--gold-glow); object-fit: cover; }
+  header h1 { margin: 0; font-family: 'Orbitron', sans-serif; font-size: 1rem; letter-spacing: 2px; color: #fff; text-transform: uppercase; }
+  header h1 span { color: var(--gold); }
+
+  .fab-admin {
+    position: fixed; bottom: 90px; right: 20px; background: var(--gold); color: #000; width: 50px; height: 50px;
+    border-radius: 50%; display: flex; justify-content: center; align-items: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5); z-index: 2000; font-size: 10px; font-weight: 800; border: none; cursor: pointer;
+  }
+
+  .filter-bar { display: flex; gap: 10px; margin: 15px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none; }
+  .filter-btn { 
+    padding: 8px 18px; border: 1px solid var(--border); border-radius: 30px; 
+    background: var(--glass); color: #888; font-size: 0.8rem; font-weight: 600; white-space: nowrap; transition: 0.3s;
+  }
+  .filter-btn.active { background: var(--gold); color: #000; border-color: var(--gold); box-shadow: 0 0 15px var(--gold-glow); }
+
+  .gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 12px; }
+  .gallery-item { border-radius: 16px; overflow: hidden; background: var(--card-bg); position: relative; border: 1px solid var(--border); transition: 0.3s; }
+  .gallery-item img { width: 100%; height: 170px; object-fit: cover; }
+  .info { padding: 10px; }
+  .info h3 { margin: 0; font-size: 0.85rem; color: #eee; font-weight: 700; text-transform: uppercase; }
+  .price-tag { color: var(--gold); font-weight: 800; font-size: 1.1rem; font-family: 'Orbitron', sans-serif; }
+
+  .sold-overlay { 
+    position: absolute; top: 0; left: 0; width: 100%; height: 170px; 
+    background: rgba(0,0,0,0.7); display: flex; justify-content: center; align-items: center; z-index: 10; backdrop-filter: blur(2px);
+  }
+  .sold-label { background: #ff4757; color: white; padding: 5px 12px; font-weight: 900; border-radius: 4px; font-size: 0.8rem; }
+
+  .admin-panel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--dark-bg); z-index: 3000; padding: 30px 20px; overflow-y: auto; }
+  .admin-panel input, .admin-panel select { width: 100%; background: #1a1a1d; border: 1px solid var(--border); padding: 15px; margin-bottom: 15px; color: #fff; border-radius: 10px; }
+
+  .modal-overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.95); z-index: 5000; justify-content: center; align-items: center; }
+
+  footer { position: fixed; bottom: 0; width: 100%; padding: 20px; display: flex; justify-content: center; z-index: 100; pointer-events: none; }
+  .main-btn { background: #fff; color: #000; padding: 14px 50px; border-radius: 12px; text-decoration: none; font-weight: 800; pointer-events: auto; }
+  
+  .admin-controls { padding: 8px; background: #222; display: flex; gap: 5px; border-top: 1px solid #333; }
+  .btn-del { background: #ff4757; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-weight: bold; flex: 1; }
+  .btn-sold { background: #333; color: white; border: 1px solid #444; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 10px; flex: 2; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <img src="ironclaw.png" alt="IC" onerror="this.src='https://ui-avatars.com/api/?name=IC&background=ff9f43&color=000&bold=true'">
+    <h1>IRON<span>CLAW</span></h1>
+  </div>
+</header>
+
+<button class="fab-admin" id="adminToggle">ADMIN</button>
+
+<div id="adminPanel" class="admin-panel">
+    <h2 style="color:var(--gold); font-family:'Orbitron'">DASHBOARD</h2>
+    <input type="text" id="birdName" placeholder="Stock Name">
+    <input type="text" id="birdPrice" placeholder="Price (Numeric)">
+    <input type="text" id="birdDesc" placeholder="Age / Bloodline">
+    <select id="birdCategory">
+        <option value="Boston">Boston</option>
+        <option value="Golden boy">Golden Boy</option>
+        <option value="Melsim black">Melsim Black</option>
+        <option value="Hatch grey">Hatch Grey</option>
+    </select>
+    <input type="file" id="birdImage" accept="image/*">
+    <button onclick="saveBird()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:800; font-family:'Orbitron'">PUBLISH</button>
+    <button onclick="manualCloseAdmin()" style="width:100%; padding:15px; background:transparent; color:#777; border:none;">EXIT PANEL</button>
+</div>
+
+<div id="pinModal" class="modal-overlay">
+    <div style="background:#1a1a1d; padding:30px; border-radius:20px; text-align:center; border:1px solid #333; width:90%; max-width:320px;">
+        <h3 style="font-family:'Orbitron'; color:var(--gold)">SECURITY</h3>
+        <input type="password" id="pinField" style="width:100%; margin:20px 0; padding:15px; background:#000; border:1px solid #444; color:#fff; text-align:center; font-size:1.5rem; border-radius:10px;">
+        <button onclick="verifyPin()" style="width:100%; padding:12px; background:var(--gold); border:none; border-radius:10px; font-weight:bold;">UNLOCK</button>
+        <p onclick="manualClosePin()" style="margin-top:15px; color:#555; cursor:pointer;">Cancel</p>
+    </div>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="filterSelection('all', event)">ALL STOCKS</button>
+  <button class="filter-btn" onclick="filterSelection('Boston', event)">BOSTON</button>
+  <button class="filter-btn" onclick="filterSelection('Golden boy', event)">GOLDEN</button>
+  <button class="filter-btn" onclick="filterSelection('Melsim black', event)">MELSIM</button>
+  <button class="filter-btn" onclick="filterSelection('Hatch grey', event)">GREY</button>
+</div>
+
+<main class="gallery-grid" id="gallery"></main>
+
+<footer><a href="https://m.me/splasher11" target="_blank" class="main-btn">CONTACT OWNER</a></footer>
+
+<script>
+const DB = 'ironclaw_ultra_v1';
+let birds = JSON.parse(localStorage.getItem(DB)) || [];
+let auth = false;
+
+// --- NAVIGATION HANDLERS ---
+function openAdmin() {
+    document.getElementById('adminPanel').style.display = 'block';
+    history.pushState({ view: 'admin' }, "");
+}
+
+function openPin() {
+    document.getElementById('pinModal').style.display = 'flex';
+    history.pushState({ view: 'pin' }, "");
+}
+
+function manualCloseAdmin() { history.back(); }
+function manualClosePin() { history.back(); }
+
+window.onpopstate = function(event) {
+    document.getElementById('adminPanel').style.display = 'none';
+    document.getElementById('pinModal').style.display = 'none';
+};
+
+document.getElementById('adminToggle').onclick = () => {
+    if(auth) openAdmin();
+    else openPin();
+};
+
+function verifyPin() {
+    if(document.getElementById('pinField').value === "664466") {
+        auth = true;
+        history.back(); 
+        setTimeout(() => openAdmin(), 150);
+        render();
+    } else { alert("Access Denied"); }
+}
+
+// --- CORE LOGIC ---
+function saveBird() {
+    const nameInput = document.getElementById('birdName');
+    const priceInput = document.getElementById('birdPrice');
+    const descInput = document.getElementById('birdDesc');
+    const categoryInput = document.getElementById('birdCategory');
+    const imageInput = document.getElementById('birdImage');
+
+    if(!nameInput.value || !priceInput.value || !imageInput.files[0]) {
+        return alert("Fill all details!");
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        birds.unshift({ 
+            id: Date.now(), 
+            name: nameInput.value, 
+            price: "₱" + priceInput.value, 
+            desc: descInput.value, 
+            category: categoryInput.value, 
+            image: e.target.result, 
+            isSold: false 
+        });
+        localStorage.setItem(DB, JSON.stringify(birds));
+        
+        nameInput.value = ''; priceInput.value = ''; descInput.value = ''; imageInput.value = '';
+        render();
+        manualCloseAdmin();
+        alert("Stock Published!");
+    };
+    reader.readAsDataURL(imageInput.files[0]);
+}
+
+function render(filter = 'all') {
+    const gallery = document.getElementById('gallery');
+    gallery.innerHTML = '';
+    const list = filter === 'all' ? birds : birds.filter(b => b.category === filter);
+    
+    list.forEach(bird => {
+        const item = document.createElement('div');
+        item.className = 'gallery-item';
+        let soldUI = bird.isSold ? `<div class="sold-overlay"><div class="sold-label">SOLD OUT</div></div>` : '';
+        let adminUI = auth ? `
+            <div class="admin-controls">
+                <button class="btn-sold" onclick="toggleSold(${bird.id})">${bird.isSold ? 'RESTOCK' : 'MARK SOLD'}</button>
+                <button class="btn-del" onclick="delBird(${bird.id})">DEL</button>
+            </div>` : '';
+
+        item.innerHTML = `
+            ${soldUI}
+            <img src="${bird.image}">
+            <div class="info">
+                <h3>${bird.name}</h3>
+                <span class="price-tag">${bird.price}</span>
+                <p style="font-size:0.7rem; color:#777; margin-top:5px;">${bird.desc || ''}</p>
+            </div>
+            ${adminUI}
+        `;
+        gallery.appendChild(item);
+    });
+}
+
+function toggleSold(id) {
+    const i = birds.findIndex(b => b.id === id);
+    birds[i].isSold = !birds[i].isSold;
+    localStorage.setItem(DB, JSON.stringify(birds));
+    render();
+}
+
+function delBird(id) {
+    if(confirm("Sigurado ka?")) {
+        birds = birds.filter(b => b.id !== id);
+        localStorage.setItem(DB, JSON.stringify(birds));
+        render();
+    }
+}
+
+function filterSelection(cat, e) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    e.target.classList.add('active');
+    render(cat);
+}
+
+render();
+</script>
+</body>
+</html>
